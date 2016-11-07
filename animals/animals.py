@@ -1,18 +1,14 @@
 import discord
 from discord.ext import commands
-try: # check if BeautifulSoup4 is installed
-	from bs4 import BeautifulSoup
-	soupAvailable = True
-except:
-	soupAvailable = False
 import aiohttp
 import tempfile
 
+class Animals:
     """Displays a random picture of a dog."""
-
+    
     def __init__(self, bot):
         self.bot = bot
-
+    
     @commands.command(pass_context=True)
     async def dog(self, ctx): 
         """Loads a random dog picture from www.randomdoggiegenerator.com"""
@@ -29,6 +25,4 @@ import tempfile
 
 
 def setup(bot):
-	if soupAvailable:
-	else:
-		raise RuntimeError("You need to run 'pip3 install beautifulsoup4'")
+    bot.add_cog(Animals(bot))
