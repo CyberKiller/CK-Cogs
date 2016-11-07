@@ -8,6 +8,7 @@ except:
 import aiohttp
 import tempfile
 
+class Animals:
     """Displays a random picture of a dog."""
 
     def __init__(self, bot):
@@ -30,5 +31,6 @@ import tempfile
 
 def setup(bot):
 	if soupAvailable:
+		bot.add_cog(Animals(bot))
 	else:
 		raise RuntimeError("You need to run 'pip3 install beautifulsoup4'")
