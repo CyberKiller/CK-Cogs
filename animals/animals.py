@@ -1,10 +1,5 @@
 import discord
 from discord.ext import commands
-try: # check if BeautifulSoup4 is installed
-	from bs4 import BeautifulSoup
-	soupAvailable = True
-except:
-	soupAvailable = False
 import aiohttp
 import tempfile
 
@@ -30,7 +25,4 @@ class Animals:
 
 
 def setup(bot):
-	if soupAvailable:
-		bot.add_cog(Animals(bot))
-	else:
-		raise RuntimeError("You need to run 'pip3 install beautifulsoup4'")
+	bot.add_cog(Animals(bot))
