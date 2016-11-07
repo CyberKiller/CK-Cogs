@@ -5,10 +5,10 @@ import tempfile
 
 class Animals:
     """Displays a random picture of a dog."""
-
+    
     def __init__(self, bot):
         self.bot = bot
-
+    
     @commands.command(pass_context=True)
     async def dog(self, ctx): 
         """Loads a random dog picture from www.randomdoggiegenerator.com"""
@@ -25,4 +25,4 @@ class Animals:
 
 
 def setup(bot):
-	bot.add_cog(Animals(bot))
+    bot.add_cog(Animals(bot))
