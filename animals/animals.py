@@ -43,7 +43,7 @@ class Animals:
                     fileExt = imghdr.what(tmpStrm) #determine the image file extention
                     if fileExt == None: #data is not an image file!
                         raise RuntimeError("Got file data that was not an image.")
-                    await self.bot.upload(tmpStrm, filename="." + fileExt)
+                    await self.bot.upload(tmpStrm, filename="image." + fileExt)
 
 def setup(bot):
     bot.add_cog(Animals(bot))
