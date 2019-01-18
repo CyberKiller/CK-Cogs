@@ -3,5 +3,8 @@
     "INSTALL_MSG" : "Animals cog installed. Will show random pictures of certain animals. eg: [p]dog",
     "NAME" : "Animals",
     "SHORT" : "Pictures of animals!",
-    "DESCRIPTION" : "Gets a random picture of an animal depending on the command used."
+    "DESCRIPTION" : "Gets a random picture of an animal depending on the command used.",
+    "TAGS" : ["image", "dog", "cat", "animals"],
+    "REQUIREMENTS" : ["aiohttp"],
+    "HIDDEN" : false
 }
