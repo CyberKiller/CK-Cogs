@@ -33,14 +33,15 @@ class Spotify(commands.Cog):
     @commands.guild_only()
     async def spotify(self, ctx, *, query):
         """Play a Spotify url/uri using YouTube."""
-        await self.checkconfig(ctx)
+        if not await self.checkconfig(ctx): return False
         #determine type of url/uri (track, album or playlist)
         mResult = self.uriParser.search(query)
-        namedGroups = mResult.groupdict()
         if mResult == None:
             await ctx.send("That doesn't appear to be a valid Spotify URL or URI.")
             return
+        namedGroups = mResult.groupdict()
         uriType = namedGroups["uriType"]
+        
         if uriType == "album": #Make it try to play the full album instead?
             album = self.sp.album(query)
             tracks = album["tracks"]["items"]
@@ -57,7 +58,7 @@ class Spotify(commands.Cog):
                 for item in playlistTracks["items"]: #extract all the tracks from the playlist
                     tracks.append(item["track"])
                 offset += 100
-                if offeset >= playlistTracks["total"]:
+                if offset >= playlistTracks["total"]:
                     break
         elif uriType == "track":
             tracks = []
@@ -65,7 +66,7 @@ class Spotify(commands.Cog):
         else:
             await ctx.send("Error determining Spotify URL or URI type.")
             return
-            
+        
         cog = ctx.bot.get_cog("Audio")
         if cog == None:
             ctx.send("Error getting Audio cog, please check if Audio cog is enabled.")
@@ -152,6 +153,7 @@ class Spotify(commands.Cog):
                 self.config_valid = True
         else:
             self.config_valid = False
+            return None
         return sp
         
     async def checkconfig(self, ctx, *args, **kwargs):
@@ -161,3 +163,6 @@ class Spotify(commands.Cog):
                     "{prefix}spotifyset clientid and {prefix}spotifyset clientsecret commands"
                 ).format(prefix=ctx.prefix)
             )
+            return False
+        else: 
+            return True
