@@ -1,9 +1,10 @@
 from redbot.core import commands, Config, checks
 from redbot.core.bot import Red
-from redbot.cogs import audio
 import discord
+import lavalink
 
 import re
+from random import randrange
 
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials, SpotifyOauthError
@@ -14,10 +15,13 @@ class Spotify(commands.Cog):
     
     NULL_CFG_VAL = "NULL"
     
-    def __init__(self):
-    #Config stuff
+    def __init__(self, bot):
+        self.bot = bot
+        self.queues = {}
+
+        #Config stuff
         self.config_valid = False
-        self.config = Config.get_conf(self, identifier=7157861795)
+        self.config = Config.get_conf(self, identifier=7157861795, force_registration=True)
         default_global = {
             "client_id": Spotify.NULL_CFG_VAL,
             "client_secret": Spotify.NULL_CFG_VAL
@@ -27,13 +31,39 @@ class Spotify(commands.Cog):
         self.uriParser = re.compile(r"spotify(?:\.com)?[:/](?:user[:/](?P<user>\w+)[:/])?(?P<uriType>album|artist|playlist|track)[:/](?P<id>[0-9a-zA-Z]+)")
     
     async def initialize(self):
-        self.sp = await self.initconfig() #load the config and init spotipy
+        self.sp = await self._init_config() #load the config and init spotipy
+
+        #lavalink stuff
+        #get the lavalink config from the audio cog
+        audio_cog = self.bot.get_cog("Audio")
+
+        host = await audio_cog.config.host()
+        password = await audio_cog.config.password()
+        rest_port = await audio_cog.config.rest_port()
+        ws_port = await audio_cog.config.ws_port()
+
+        await lavalink.initialize(
+            bot=self.bot,
+            host=host,
+            password=password,
+            rest_port=rest_port,
+            ws_port=ws_port,
+            timeout=60,
+        )
+        lavalink.register_event_listener(self._event_handler)
+
+    async def _event_handler(self, player, event_type, extra):
+        if event_type == lavalink.LavalinkEvents.TRACK_START and len(self.queues[player.channel.guild]):
+            await self._play_track(player.channel.guild)
+
+        if event_type == lavalink.LavalinkEvents.QUEUE_END:
+            del self.queues[player.channel.guild] #clear the spotify queue as well
         
     @commands.command()
     @commands.guild_only()
     async def spotify(self, ctx, *, query):
         """Play a Spotify url/uri using YouTube."""
-        if not await self.checkconfig(ctx): return False
+        if not await self._checkconfig(ctx): return False
         #determine type of url/uri (track, album or playlist)
         mResult = self.uriParser.search(query)
         if mResult == None:
@@ -47,18 +77,18 @@ class Spotify(commands.Cog):
             tracks = album["tracks"]["items"]
         elif uriType == "artist": #Play the artists top tracks.
             artist = self.sp.artist(query)
-            topTracks = self.sp.artist_top_tracks(artist["id"], "GB") #need to implement country selection
-            tracks = topTracks["tracks"]
+            top_tracks = self.sp.artist_top_tracks(artist["id"], "GB") #need to implement country selection
+            tracks = top_tracks["tracks"]
             await ctx.send("Playing " + artist["name"] + "'s top tracks")
         elif uriType == "playlist": #Needs changing to the new user-less playlist api once spotipy supports it
             tracks = []
             offset = 0
             while True:
-                playlistTracks = self.sp.user_playlist_tracks(namedGroups["user"], namedGroups["id"], limit=100, offset=offset)
-                for item in playlistTracks["items"]: #extract all the tracks from the playlist
+                playlist_tracks = self.sp.user_playlist_tracks(namedGroups["user"], namedGroups["id"], limit=100, offset=offset)
+                for item in playlist_tracks["items"]: #extract all the tracks from the playlist
                     tracks.append(item["track"])
                 offset += 100
-                if offset >= playlistTracks["total"]:
+                if offset >= playlist_tracks["total"]:
                     break
         elif uriType == "track":
             tracks = []
@@ -66,16 +96,16 @@ class Spotify(commands.Cog):
         else:
             await ctx.send("Error determining Spotify URL or URI type.")
             return
-        
-        cog = ctx.bot.get_cog("Audio")
-        if cog == None:
-            ctx.send("Error getting Audio cog, please check if Audio cog is enabled.")
+        queue = []
         for track in tracks:
             artists = ""
             for artist in track["artists"]:
                 artists += artist["name"] + " "
-            await ctx.invoke(cog.play, query=artists + track["name"])
-    
+            queue.append({"ctx": ctx, "track": artists + track["name"]})
+
+        self.queues[ctx.guild] = queue
+        await self._play_track(ctx.guild) #needs changing to only play if bot is not playing in this server already
+
     @commands.group()
     async def spotifyset(self, ctx):
         """Spotify configuration options."""
@@ -101,7 +131,7 @@ class Spotify(commands.Cog):
             return
         
         await self.config.client_id.set(clientid)
-        self.sp = await self.initconfig() #reload the config and init spotipy
+        self.sp = await self._init_config() #reload the config and init spotipy
         await ctx.send("Spotify Client ID set.")
         
     @checks.is_owner()
@@ -118,33 +148,23 @@ class Spotify(commands.Cog):
     
             await ctx.send(
                 "Please use that command in DM. Since users probably saw your Client Secret,"
-                " it is recommended to reset it right now. Go to the following link, select the app this bot uses,"
-                " select `Show Client Secret` and `Reset`."
+                " it is recommended to reset it right now. Go to the following link, "
+                "select the app this bot uses, select `Show Client Secret` and `Reset`."
                 "\n\nhttps://developer.spotify.com/dashboard/applications"
             )
             return
         
         await self.config.client_secret.set(secret)
-        self.sp = await self.initconfig() #reload the config and init spotipy
+        self.sp = await self._init_config() #reload the config and init spotipy
         await ctx.send("Spotify Client Secret set.")
-    
-    @checks.is_owner()
-    @commands.command()
-    @commands.guild_only()
-    async def spotifyaudiocalltest(self, ctx, *, query):
-        """Test audio cog interoperability"""
-        cog = ctx.bot.get_cog("Audio")
-        await ctx.invoke(cog.play, query=query)
         
-    async def initconfig(self):
-        clientId = await self.config.client_id()
-        print("clientId = ", clientId)
-        clientSecret = await self.config.client_secret()
-        print("clientSecret = ", clientSecret)
+    async def _init_config(self):
+        client_id = await self.config.client_id()
+        client_secret = await self.config.client_secret()
         #Check config is valid
-        if clientId != Spotify.NULL_CFG_VAL or clientSecret != Spotify.NULL_CFG_VAL:
+        if client_id != Spotify.NULL_CFG_VAL or client_secret != Spotify.NULL_CFG_VAL:
             try:
-                client_credentials_manager = SpotifyClientCredentials(clientId, clientSecret)
+                client_credentials_manager = SpotifyClientCredentials(client_id, client_secret)
                 #Init spotipy
                 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
             except SpotifyOauthError:
@@ -156,7 +176,7 @@ class Spotify(commands.Cog):
             return None
         return sp
         
-    async def checkconfig(self, ctx, *args, **kwargs):
+    async def _checkconfig(self, ctx, *args, **kwargs):
         if self.config_valid == False:
             await ctx.send(
                 ("Spotify config is not valid, please set the Client ID and Client Secret using the "
@@ -166,3 +186,12 @@ class Spotify(commands.Cog):
             return False
         else: 
             return True
+    
+    async def _play_track(self, guild_id):
+        audio_cog = self.bot.get_cog("Audio")
+        shuffle = await audio_cog.config.guild(guild_id).shuffle()
+        if shuffle:
+            track_dict = self.queues[guild_id].pop(randrange(len(self.queues[guild_id])))
+        else:
+            track_dict = self.queues[guild_id].pop(0)
+        await track_dict["ctx"].invoke(audio_cog.play, query=track_dict["track"])
