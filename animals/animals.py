@@ -51,7 +51,7 @@ class Animals(commands.Cog):
         
     async def _get_and_upload_dynamic_jpg(self, ctx, url):
         """Gets a jpeg from a dynamic link such as a php link then uploads it to the channel.
-        This is a work-around for the discord client caching the link's dynamic content content."""
+        This is a work-around for the discord client caching the link's dynamic content."""
         async with aiohttp.ClientSession() as session:
             async with session.get(url) as response:
                 response.raise_for_status() #raise exception if status code >= 400
