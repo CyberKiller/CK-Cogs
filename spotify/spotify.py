@@ -4,6 +4,7 @@ import discord
 import lavalink
 
 import re
+import asyncio
 from random import randrange
 
 import spotipy
@@ -18,6 +19,7 @@ class Spotify(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.queues = {}
+        self._connect_task = None
 
         #Config stuff
         self.config_valid = False
@@ -32,25 +34,37 @@ class Spotify(commands.Cog):
     
     async def initialize(self):
         self.sp = await self._init_config() #load the config and init spotipy
-
-        #lavalink stuff
-        #get the lavalink config from the audio cog
-        audio_cog = self.bot.get_cog("Audio")
-
-        host = await audio_cog.config.host()
-        password = await audio_cog.config.password()
-        rest_port = await audio_cog.config.rest_port()
-        ws_port = await audio_cog.config.ws_port()
-
-        await lavalink.initialize(
-            bot=self.bot,
-            host=host,
-            password=password,
-            rest_port=rest_port,
-            ws_port=ws_port,
-            timeout=60,
-        )
+        self._restart_connect()
         lavalink.register_event_listener(self._event_handler)
+
+    def _restart_connect(self):
+        if self._connect_task:
+            self._connect_task.cancel()
+
+        self._connect_task = self.bot.loop.create_task(self.attempt_connect())
+
+    async def attempt_connect(self, timeout: int = 30):
+        while True:  # run until success
+            try:
+                #get the lavalink config from the audio cog
+                audio_cog = self.bot.get_cog("Audio")
+
+                host = await audio_cog.config.host()
+                password = await audio_cog.config.password()
+                rest_port = await audio_cog.config.rest_port()
+                ws_port = await audio_cog.config.ws_port()
+
+                await lavalink.initialize(
+                    bot=self.bot,
+                    host=host,
+                    password=password,
+                    rest_port=rest_port,
+                    ws_port=ws_port,
+                    timeout=timeout,
+                )
+                return  # break infinite loop
+            except Exception:
+                await asyncio.sleep(1)  # prevent busylooping
 
     async def _event_handler(self, player, event_type, extra):
         if event_type == lavalink.LavalinkEvents.TRACK_START and len(self.queues[player.channel.guild]):
