@@ -10,12 +10,12 @@ class Animals(commands.Cog):
 
     @commands.command()
     async def cat(self, ctx):
-        """Get a random cat picture from random.cat"""
+        """Get a random cat picture from thecatapi.com"""
         msg = await ctx.send("`Searching for a cat...`")
         async with aiohttp.ClientSession() as session:
-            async with session.get("http://aws.random.cat/meow") as response:
+            async with session.get("https://api.thecatapi.com/v1/images/search") as response:
                 result = await response.json()
-                await msg.edit(content=result['file'])
+                await msg.edit(content=result[0]['url'])
                 
     @commands.command()
     async def dog(self, ctx):
