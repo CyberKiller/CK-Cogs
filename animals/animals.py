@@ -10,7 +10,7 @@ class Animals(commands.Cog):
 
     @commands.command()
     async def cat(self, ctx):
-        """Get a random cat picture from thecatapi.com"""
+        """Get a random cat picture from https://thecatapi.com"""
         msg = await ctx.send("`Searching for a cat...`")
         async with aiohttp.ClientSession() as session:
             async with session.get("https://api.thecatapi.com/v1/images/search") as response:
@@ -19,7 +19,7 @@ class Animals(commands.Cog):
                 
     @commands.command()
     async def dog(self, ctx):
-        """Get a random dog picture from random.dog"""
+        """Get a random dog picture from https://random.dog"""
         msg = await ctx.send("`Searching for a dog...`")
         async with aiohttp.ClientSession() as session:
             async with session.get("https://random.dog/woof.json") as response:
@@ -28,14 +28,14 @@ class Animals(commands.Cog):
 
     @commands.command()
     async def dog2(self, ctx):
-        """Get a random dog picture from www.randomdoggiegenerator.com"""
+        """Get a random dog picture from https://www.randomdoggiegenerator.com"""
         msg = await ctx.send("`Searching for a dog...`")
-        await self._get_and_upload_dynamic_jpg(ctx, "http://www.randomdoggiegenerator.com/randomdoggie.php")
+        await self._get_and_upload_dynamic_jpg(ctx, "https://www.randomdoggiegenerator.com/randomdoggie.php")
         await msg.delete()
 
     @commands.command()
     async def kitten(self, ctx):
-        """Get a random kitten picture from www.randomkittengenerator.com"""
+        """Get a random kitten picture from http://www.randomkittengenerator.com"""
         msg = await ctx.send("`Searching for a kitten...`")
         await self._get_and_upload_dynamic_jpg(ctx, "http://www.randomkittengenerator.com/cats/rotator.php")
         await msg.delete()
