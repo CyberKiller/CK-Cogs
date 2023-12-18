@@ -8,6 +8,9 @@ import random
 class Animals(commands.Cog):
     """Commands to display random pictures of animals."""
 
+    def __init__(self, bot):
+        self.bot = bot
+
     @commands.command()
     async def cat(self, ctx):
         """Get a random cat picture from https://thecatapi.com"""
@@ -27,13 +30,6 @@ class Animals(commands.Cog):
                 await msg.edit(content=result['url'])
 
     @commands.command()
-    async def dog2(self, ctx):
-        """Get a random dog picture from https://www.randomdoggiegenerator.com"""
-        msg = await ctx.send("`Searching for a dog...`")
-        await self._get_and_upload_dynamic_jpg(ctx, "https://www.randomdoggiegenerator.com/randomdoggie.php")
-        await msg.delete()
-
-    @commands.command()
     async def kitten(self, ctx):
         """Get a random kitten picture from http://www.randomkittengenerator.com"""
         msg = await ctx.send("`Searching for a kitten...`")
@@ -41,9 +37,9 @@ class Animals(commands.Cog):
         await msg.delete()
         
     @commands.command()
-    async def puppy(self, ctx):
-        """Get a random puppy gif from https://openpuppies.com"""
-        msg = await ctx.send("`Searching for a puppy...`")
+    async def doggif(self, ctx):
+        """Get a random dog gif from https://openpuppies.com"""
+        msg = await ctx.send("`Searching for a dog gif...`")
         async with aiohttp.ClientSession() as session:
             async with session.get("https://openpuppies.com/puppies.json") as response:
                 result = await response.json()
