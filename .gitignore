@@ -149,3 +149,5 @@ venv.bak/
 
 #Custom additions
 .vscode
+activate.bat
+deactivate.bat
