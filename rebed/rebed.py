@@ -23,7 +23,9 @@ class Rebed(commands.Cog):
         #new_msg = self.regex_instagram.sub("ddinstagram.com", message.content)
         urls = self.extract_urls(message.content)
         new_msg = ""
-        for url in urls:           
+        for url in urls:
+            if not url.path: return
+
             if url.netloc in {"reddit.com", "old.reddit.com", "www.reddit.com"}:
                 #TODO handle unavailabilty of packaged media               
                 new_msg += self.format_url(url, url.netloc.replace("reddit", "rxddit"))
