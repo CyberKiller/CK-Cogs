@@ -1,0 +1,10 @@
+{
+    "AUTHOR" : "CyberKiller",
+    "INSTALL_MSG" : "Rebed cog installed. Will fix broken reddit, twitter and instagram embeds.",
+    "NAME" : "Rebed",
+    "SHORT" : "Fix reddit, twitter and instagram embeds.",
+    "DESCRIPTION" : "Fixes broken reddit, twitter and instagram embeds.",
+    "TAGS" : ["image", "video", "embed", "reddit", "twitter", "instagram"],
+    "REQUIREMENTS" : [],
+    "HIDDEN" : false
+}
