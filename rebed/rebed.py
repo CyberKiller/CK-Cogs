@@ -24,7 +24,7 @@ class Rebed(commands.Cog):
         urls = self.extract_urls(message.content)
         new_msg = ""
         for url in urls:
-            if not url.path: return
+            if not url.path or url.path == "/": return
 
             if url.netloc in {"reddit.com", "old.reddit.com", "www.reddit.com"}:
                 #TODO handle unavailabilty of packaged media               
