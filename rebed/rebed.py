@@ -4,7 +4,7 @@ from redbot.core import commands
 from urllib.parse import urlparse
 
 class Rebed(commands.Cog):
-    """Fix reddit, twitter and instagram embeds."""
+    """Fix reddit, twitter, tiktok and instagram embeds."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -31,6 +31,8 @@ class Rebed(commands.Cog):
                 new_msg += self.format_url(url, url.netloc.replace("reddit", "rxddit"))
             elif url.netloc in {"twitter.com", "www.twitter.com", "x.com", "www.x.com"}:
                 new_msg += self.format_url(url, "fxtwitter.com")
+            elif url.netloc in {"tiktok.com", "www.tiktok.com"}:
+                new_msg += self.format_url(url, "tnktok.com")
             elif url.netloc in {"instagram.com", "www.instagram.com"}:
                 new_msg += self.format_url(url, "ddinstagram.com")
         if new_msg:
@@ -54,4 +56,4 @@ class Rebed(commands.Cog):
         if url.fragment:
             s += "#" + url.fragment
         return s + "\n"
-        
+            

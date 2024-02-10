@@ -4,7 +4,7 @@
     "NAME" : "Rebed",
     "SHORT" : "Fix reddit, twitter and instagram embeds.",
     "DESCRIPTION" : "Fixes broken reddit, twitter and instagram embeds.",
-    "TAGS" : ["image", "video", "embed", "reddit", "twitter", "instagram"],
+    "TAGS" : ["image", "video", "embed", "reddit", "twitter", "tiktok", "instagram"],
     "REQUIREMENTS" : [],
     "HIDDEN" : false
 }
