@@ -8,9 +8,6 @@ class Rebed(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        #self.regex_reddit = re.compile(r"https?:\/\/((?:old\.|www\.)?reddit\.com)")
-        #self.regex_twitter = re.compile(r"https?:\/\/((?:|www\.)?(?:twitter|x)\.com)")
-        #self.regex_instagram = re.compile(r"https?:\/\/((?:|www\.)?instagram\.com)")
 
     @commands.Cog.listener()
     async def on_message(self, message : discord.Message):
@@ -18,9 +15,6 @@ class Rebed(commands.Cog):
             return
         if message.guild is None:
             return
-        #new_msg = self.regex_reddit.sub("rxddit.com", message.content)
-        #new_msg = self.regex_twitter.sub("fxtwitter.com", message.content)
-        #new_msg = self.regex_instagram.sub("ddinstagram.com", message.content)
         urls = self.extract_urls(message.content)
         new_msg = ""
         for url in urls:
@@ -36,6 +30,7 @@ class Rebed(commands.Cog):
             elif url.netloc in {"instagram.com", "www.instagram.com"}:
                 new_msg += self.format_url(url, "ddinstagram.com")
         if new_msg:
+            await message.edit(suppress=True)
             await message.reply(new_msg, silent=True)
 
     def extract_urls(self, text: str):
