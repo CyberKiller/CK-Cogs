@@ -5,6 +5,6 @@
     "SHORT" : "Fix reddit, twitter and instagram embeds.",
     "DESCRIPTION" : "Fixes broken reddit, twitter and instagram embeds.",
     "TAGS" : ["image", "video", "embed", "reddit", "twitter", "tiktok", "instagram"],
-    "REQUIREMENTS" : [],
+    "REQUIREMENTS" : ["aiohttp"],
     "HIDDEN" : false
 }

@@ -7,7 +7,9 @@ import random
 
 class Animals(commands.Cog):
     """Commands to display random pictures of animals."""
-
+    
+    #TODO Only create one aiohttp session at cog startup
+    
     def __init__(self, bot):
         self.bot = bot
 

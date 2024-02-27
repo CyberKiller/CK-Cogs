@@ -151,3 +151,5 @@ venv.bak/
 .vscode
 activate.bat
 deactivate.bat
+*.example.html
+test.py
